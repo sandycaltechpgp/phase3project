@@ -13,77 +13,95 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.entity.Admin;
-import com.ecommerce.entity.User; 
+import com.ecommerce.entity.User;
 
 @Repository
 @Component
 public class UserDAO {
 
-	@Autowired
+    @Autowired
     private SessionFactory sessionFactory;
 
-	
-	@SuppressWarnings("unchecked")
-	public User authenticate(String emailId, String pwd) {
-		List<User> list = this.sessionFactory.getCurrentSession().createQuery("from User where emailid=:emailid and pwd=:pwd")
-				.setParameter("emailid", emailId)
-				.setParameter("pwd", pwd)
-				.list();
-		if (list.size() > 0)
-			return (User) list.get(0);
-		else
-			return null;
-		
-	}
-	
-	@SuppressWarnings("unchecked")
-	public User getUserById(long id) {
-		String strId = String.valueOf(id);
-		List<User> list = this.sessionFactory.getCurrentSession().createQuery("from User where id=" + strId).list();
-		if (list.size() > 0)
-			return (User) list.get(0);
-		else
-			return null;
-		
-	}
-	@SuppressWarnings("unchecked")
-	public User getUserByEmailId(String emailId) {
-		List<User> list = this.sessionFactory.getCurrentSession().createQuery("from User where emailid='" + emailId + "'").list();
-		if (list.size() > 0)
-			return (User) list.get(0);
-		else
-			return null;
-		
-	}
-	
-	@SuppressWarnings("unchecked")
-	public void updateUser(User user) {
-		String sql = "";
-		if (user.getID() == 0) {
-			user.setDateAdded(Calendar.getInstance().getTime());
-			this.sessionFactory.getCurrentSession().save(user);
-		} else if (user.getID() > 0) {
-			sql = "update User set fname=:fname, lname=:lname, address=:address, age=:age, pwd=:pwd where " +
-					" ID=:id";
-			Query query = this.sessionFactory.getCurrentSession().createQuery(sql);
-			query.setParameter("fname", user.getFname());
-			query.setParameter("lname", user.getLname());
-			query.setParameter("address", user.getAddress());
-			query.setParameter("age", user.getAge());
-			query.setParameter("pwd", user.getPwd());
-			if (user.getID() > 0)
-				query.setParameter("id", user.getID());
-			
-			query.executeUpdate();
-		}
-		
-	}
 
-	@SuppressWarnings("unchecked")
-	public List<User> getAllUsers() {
-		List<User> list = this.sessionFactory.getCurrentSession().createQuery("from User order by date_added").list();
+    @SuppressWarnings("unchecked")
+    public User authenticate(String emailId, String pwd) {
+        List<User> list = this.sessionFactory.getCurrentSession().createQuery("from User where emailid=:emailid and pwd=:pwd")
+                .setParameter("emailid", emailId)
+                .setParameter("pwd", pwd)
+                .list();
+        if (list.size() > 0)
+            return (User) list.get(0);
+        else
+            return null;
 
-		return list;
-	}
-	
+    }
+
+    @SuppressWarnings("unchecked")
+    public User getUserById(long id) {
+        String strId = String.valueOf(id);
+        List<User> list = this.sessionFactory.getCurrentSession().createQuery("from User where id=" + strId).list();
+        if (list.size() > 0)
+            return (User) list.get(0);
+        else
+            return null;
+
+    }
+
+    @SuppressWarnings("unchecked")
+    public User getUserByEmailId(String emailId) {
+        List<User> list = this.sessionFactory.getCurrentSession().createQuery("from User where emailid='" + emailId + "'").list();
+        if (list.size() > 0)
+            return (User) list.get(0);
+        else
+            return null;
+
+    }
+
+    @SuppressWarnings("unchecked")
+    public void updateUser(User user) {
+        String sql = "";
+        if (user.getID() == 0) {
+            user.setDateAdded(Calendar.getInstance().getTime());
+            this.sessionFactory.getCurrentSession().save(user);
+        } else if (user.getID() > 0) {
+            sql = "update User set fname=:fname, lname=:lname, address=:address, age=:age, pwd=:pwd where " +
+                    " ID=:id";
+            Query query = this.sessionFactory.getCurrentSession().createQuery(sql);
+            query.setParameter("fname", user.getFname());
+            query.setParameter("lname", user.getLname());
+            query.setParameter("address", user.getAddress());
+            query.setParameter("age", user.getAge());
+            query.setParameter("pwd", user.getPwd());
+            if (user.getID() > 0)
+                query.setParameter("id", user.getID());
+
+            query.executeUpdate();
+        }
+
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<User> getAllUsers() {
+        List<User> list = this.sessionFactory.getCurrentSession().createQuery("from User order by date_added").list();
+
+        return list;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<User> getAllUsersByNameAndEmail(String pname, String cname) {
+
+        String hql = "from User order by date_added";
+
+        if ((pname != null && !pname.isEmpty()) && (cname != null && !cname.isEmpty()))
+            hql = "from User where fname like '%" + pname + "%' and lname like '%" + cname + "%'order by date_added";
+        else if ((pname != null && !pname.isEmpty()) && (cname == null || cname.isEmpty()))
+            hql = "from User where fname like '%" + pname + "%'order by date_added";
+        else if ((pname == null || pname.isEmpty()) && (cname != null && !cname.isEmpty()))
+            hql = "from User where lname like '%" + cname + "%'order by date_added";
+
+
+        List<User> list = this.sessionFactory.getCurrentSession().createQuery(hql).list();
+
+        return list;
+    }
 }

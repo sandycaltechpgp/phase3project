@@ -58,8 +58,20 @@ public class PurchaseDAO {
 			query.executeUpdate();
 		}
 		return newId;
-	}
-	
 
+	}
+
+
+	@SuppressWarnings("unchecked")
+	public void deletePurchase(long purchaseId) {
+		String sql = "";
+		sql += "delete from Purchase where ID=:purchase_id";
+
+		Query query = this.sessionFactory.getCurrentSession().createQuery(sql);
+		query.setParameter("purchase_id", purchaseId);
+
+		query.executeUpdate();
+
+	}
 	
 }

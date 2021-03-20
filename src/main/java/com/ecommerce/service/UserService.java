@@ -42,5 +42,11 @@ public class UserService {
 	 @Transactional
 		public List<User> getAllUsers() {
 		 return userDAO.getAllUsers();
-		}	 
+		}
+
+	@Transactional
+	public List<User> getAllUsers(String pname, String cname) {
+		return userDAO.getAllUsersByNameAndEmail(pname,cname);
+	}
+
 }

@@ -7,42 +7,47 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
- 
+
 import com.ecommerce.dao.ProductDAO;
 import com.ecommerce.entity.Product;
+import com.ecommerce.dto.ProductDTO;
 
 @Component
 public class ProductService {
 
-	 @Autowired
-	 private ProductDAO productDAO;
+    @Autowired
+    private ProductDAO productDAO;
 
 
-		@Transactional
-		public Product getProductById(long id) {
-			return productDAO.getProductById(id);
-		}
-		
-		
-		@Transactional
-		public void updateProduct(Product product) {
-			productDAO.updateProduct(product);
-		}
-		
+    @Transactional
+    public Product getProductById(long id) {
+        return productDAO.getProductById(id);
+    }
 
-		@Transactional
-		public void deleteProduct(long id) {
-			productDAO.deleteProduct(id);
-		}
 
-		@Transactional
-		public List<Product> getAllProducts() {
-			return productDAO.getAllProducts();
-		}
-	 
-		@Transactional
-		public List<Object> getAllProductsWithJoin() {
-			return productDAO.getAllProductsWithJoin();
-		}
-	 		
+    @Transactional
+    public void updateProduct(Product product) {
+        productDAO.updateProduct(product);
+    }
+
+
+    @Transactional
+    public void deleteProduct(long id) {
+        productDAO.deleteProduct(id);
+    }
+
+    @Transactional
+    public List<Product> getAllProducts() {
+        return productDAO.getAllProducts();
+    }
+
+    @Transactional
+    public List<ProductDTO> getAllProductsWithJoin() {
+        return productDAO.getAllProductsWithJoin();
+    }
+
+    @Transactional
+    public List<ProductDTO> getAllProducts(String pname, String cname) {
+        return productDAO.getAllProducts(pname,cname);
+    }
 }
