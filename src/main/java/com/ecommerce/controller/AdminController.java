@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
+import java.text.SimpleDateFormat;
+import java.util.stream.*;
 
 import com.ecommerce.dto.ProductDTO;
 
@@ -183,8 +183,8 @@ public class AdminController {
         User user = userService.getUserByEmailId(pname);
 
         ArrayList<User> list = new ArrayList<User>();
-        if(user != null)
-        list.add(user);
+        if (user != null)
+            list.add(user);
 
         map.addAttribute("list", list);
 
@@ -306,6 +306,196 @@ public class AdminController {
         map.addAttribute("mapUsers", mapUsers);
         map.addAttribute("pageTitle", "ADMIN PURCHASES REPORT");
         return "admin/purchases";
+    }
+
+    @RequestMapping(value = "/adminspurchases", method = RequestMethod.GET)
+    public String spurchases(ModelMap map, javax.servlet.http.HttpServletRequest request) {
+        // check if session is still alive
+        HttpSession session = request.getSession();
+        if (session.getAttribute("admin_id") == null) {
+            return "admin/login";
+        }
+
+        List<Purchase> list = purchaseService.getAllItems();
+
+        BigDecimal total = new BigDecimal(0.0);
+
+        for (Purchase purchase : list) {
+            total = total.add(purchase.getTotal());
+        }
+
+        // use MAPs to mape users to each purchase and item names to each purchase item row
+        HashMap<Long, String> mapItems = new HashMap<Long, String>();
+        HashMap<Long, String> mapUsers = new HashMap<Long, String>();
+
+        for (Purchase purchase : list) {
+            total = total.add(purchase.getTotal());
+            User user = userService.getUserById(purchase.getUserId());
+            if (user != null)
+                mapUsers.put(purchase.getID(), user.getFname() + " " + user.getLname());
+
+            List<PurchaseItem> itemList = purchaseItemService.getAllItemsByPurchaseId(purchase.getID());
+            StringBuilder sb = new StringBuilder("");
+            for (PurchaseItem item : itemList) {
+                Product product = productService.getProductById(item.getProductId());
+                if (product != null)
+                    sb.append(product.getName() + ", " +
+                            item.getQty() + " units @" + item.getRate() + " = "
+                            + item.getPrice() + "<br>");
+            }
+            mapItems.put(purchase.getID(), sb.toString());
+        }
+        map.addAttribute("totalAmount", total);
+        map.addAttribute("list", list);
+        map.addAttribute("mapItems", mapItems);
+        map.addAttribute("mapUsers", mapUsers);
+        map.addAttribute("pageTitle", "ADMIN PURCHASES REPORT");
+        return "admin/spurchases";
+    }
+
+
+    @RequestMapping(value = "/adminsearchpurchase", method = RequestMethod.POST)
+    public String purchasesDate(ModelMap map, javax.servlet.http.HttpServletRequest request) {
+        // check if session is still alive
+        HttpSession session = request.getSession();
+        if (session.getAttribute("admin_id") == null) {
+            return "admin/login";
+        }
+
+        String startStr = request.getParameter("searchpname");
+        String endStr = request.getParameter("searchcname");
+
+        if (startStr == null || endStr == null || startStr.isEmpty() || endStr.isEmpty())
+            return "redirect:adminspurchases";
+
+        try {
+            SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
+            Date start = formater.parse(startStr);
+            Date end = formater.parse(endStr);
+
+            List<Purchase> list = purchaseService.getAllItemsForDateRange(start, end);
+
+            BigDecimal total = new BigDecimal(0.0);
+
+            for (Purchase purchase : list) {
+                total = total.add(purchase.getTotal());
+            }
+
+            // use MAPs to mape users to each purchase and item names to each purchase item row
+            HashMap<Long, String> mapItems = new HashMap<Long, String>();
+            HashMap<Long, String> mapUsers = new HashMap<Long, String>();
+
+            for (Purchase purchase : list) {
+                total = total.add(purchase.getTotal());
+                User user = userService.getUserById(purchase.getUserId());
+                if (user != null)
+                    mapUsers.put(purchase.getID(), user.getFname() + " " + user.getLname());
+
+                List<PurchaseItem> itemList = purchaseItemService.getAllItemsByPurchaseId(purchase.getID());
+                StringBuilder sb = new StringBuilder("");
+                for (PurchaseItem item : itemList) {
+                    Product product = productService.getProductById(item.getProductId());
+                    if (product != null)
+                        sb.append(product.getName() + ", " +
+                                item.getQty() + " units @" + item.getRate() + " = "
+                                + item.getPrice() + "<br>");
+                }
+                mapItems.put(purchase.getID(), sb.toString());
+            }
+            map.addAttribute("totalAmount", total);
+            map.addAttribute("list", list);
+            map.addAttribute("mapItems", mapItems);
+            map.addAttribute("mapUsers", mapUsers);
+            map.addAttribute("pageTitle", "ADMIN PURCHASES REPORT");
+            return "admin/spurchases";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:adminspurchases";
+        }
+    }
+
+
+    @RequestMapping(value = "/adminsearchpurchasecat", method = RequestMethod.POST)
+    public String purchasesDateCat(ModelMap map, javax.servlet.http.HttpServletRequest request) {
+        // check if session is still alive
+        HttpSession session = request.getSession();
+        if (session.getAttribute("admin_id") == null) {
+            return "admin/login";
+        }
+
+        String startStr = request.getParameter("searchpname");
+
+        List<Category> llist = categoryService.getAllCategories().stream().filter(it -> it.getName().equals(startStr)).collect(Collectors.toList());
+
+        System.out.println(llist);
+
+        Category cat = null;
+        if (startStr == null)
+            return "redirect:adminspurchases";
+        if (llist.size() > 0)
+            cat = llist.get(0);
+        else
+            return "redirect:adminspurchases";
+
+        try {
+
+            List<Purchase> list = purchaseService.getAllItems();
+            BigDecimal total = new BigDecimal(0.0);
+
+
+            // use MAPs to mape users to each purchase and item names to each purchase item row
+            HashMap<Long, String> mapItems = new HashMap<Long, String>();
+            HashMap<Long, String> mapUsers = new HashMap<Long, String>();
+
+            boolean show = false;
+            Iterator it = list.iterator();
+            while (it.hasNext()) {
+
+                Purchase purchase = (Purchase) it.next();
+
+                User user = userService.getUserById(purchase.getUserId());
+                if (user != null)
+                    mapUsers.put(purchase.getID(), user.getFname() + " " + user.getLname());
+
+                List<PurchaseItem> itemList = purchaseItemService.getAllItemsByPurchaseId(purchase.getID());
+                StringBuilder sb = new StringBuilder("");
+                for (PurchaseItem item : itemList) {
+                    Product product = productService.getProductById(item.getProductId());
+
+                    if (product != null) {
+                        if (product.getCategoryId() == cat.getID()) {
+                            show = true;
+                            total = total.add(purchase.getTotal());
+                            sb.append(product.getName() + ", " +
+                                    item.getQty() + " units @" + item.getRate() + " = "
+                                    + item.getPrice() + "<br>");
+
+                        }
+
+                    }
+
+                }
+
+                if (!show) {
+                    it.remove();
+                    show = false;
+                }else{
+                    mapItems.put(purchase.getID(), sb.toString());
+                    show = false;
+                }
+            }
+
+            map.addAttribute("totalAmount", total);
+            map.addAttribute("list", list);
+            map.addAttribute("mapItems", mapItems);
+            map.addAttribute("mapUsers", mapUsers);
+
+            map.addAttribute("pageTitle", "ADMIN PURCHASES SEARCH REPORT");
+            return "admin/spurchases";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:adminspurchases";
+        }
     }
 
     @RequestMapping(value = "/admindeletecat", method = RequestMethod.GET)

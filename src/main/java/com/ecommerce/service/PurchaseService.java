@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.dao.PurchaseDAO;
 import com.ecommerce.entity.Purchase;
+import java.util.Date;
 
 @Component
 public class PurchaseService {
@@ -40,5 +41,10 @@ public class PurchaseService {
     @Transactional
     public void deletePurchase(long id) {
         purchaseDAO.deletePurchase(id);
+    }
+
+    @Transactional
+    public List<Purchase> getAllItemsForDateRange(Date start, Date end) {
+        return purchaseDAO.getAllItemsForDateRange(start,end);
     }
 }

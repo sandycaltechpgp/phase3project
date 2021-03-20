@@ -1,5 +1,6 @@
 package com.ecommerce.dao;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.hibernate.SessionFactory;
@@ -10,68 +11,78 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.ecommerce.entity.Purchase; 
+import com.ecommerce.entity.Purchase;
+
+import java.util.Date;
 
 @Repository
 @Component
 public class PurchaseDAO {
 
-	@Autowired
+    @Autowired
     private SessionFactory sessionFactory;
 
-	@SuppressWarnings("unchecked")
-	public Purchase getPurchaseById(long id) {
-		String strId = String.valueOf(id);
-		List<Purchase> list = this.sessionFactory.getCurrentSession().createQuery("from Purchase where id=" + strId).list();
-		if (list.size() > 0)
-			return (Purchase) list.get(0);
-		else
-			return null;
-		
-	}
-	
-	@SuppressWarnings("unchecked")
-	public List<Purchase> getAllItems() {
-		List<Purchase> list = this.sessionFactory.getCurrentSession().createQuery("from Purchase order by ID desc").list();
-		return list;
-	}	
-		
-	@SuppressWarnings("unchecked")
-	public List<Purchase> getAllItemsByUserId(long userId) {
-		String strId = String.valueOf(userId);
-		List<Purchase> list = this.sessionFactory.getCurrentSession().createQuery("from Purchase where user_id=" + strId + " order by ID desc").list();
-		return list;
-	}	
-	
-	@SuppressWarnings("unchecked")
-	public long  updatePurchase(Purchase purchase) {
-		String sql = "";
-		long newId = 0;
-		if (purchase.getID() == 0) {
-			this.sessionFactory.getCurrentSession().save(purchase);
-			newId = purchase.getID();
-		} else {
-			Query query = this.sessionFactory.getCurrentSession().createQuery(sql);
-			query.setParameter("user_id", purchase.getUserId());
-			query.setParameter("gross_total", purchase.getTotal());
-			
-			query.executeUpdate();
-		}
-		return newId;
+    @SuppressWarnings("unchecked")
+    public Purchase getPurchaseById(long id) {
+        String strId = String.valueOf(id);
+        List<Purchase> list = this.sessionFactory.getCurrentSession().createQuery("from Purchase where id=" + strId).list();
+        if (list.size() > 0)
+            return (Purchase) list.get(0);
+        else
+            return null;
 
-	}
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Purchase> getAllItems() {
+        List<Purchase> list = this.sessionFactory.getCurrentSession().createQuery("from Purchase order by ID desc").list();
+        return list;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Purchase> getAllItemsForDateRange(Date start, Date end) {
+        SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd");
+        List<Purchase> list = this.sessionFactory.getCurrentSession().createQuery("from Purchase where date BETWEEN '" + formater.format(start) + "' AND '" + formater.format(end) + "' order by ID desc").list();
+        return list;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Purchase> getAllItemsByUserId(long userId) {
+        String strId = String.valueOf(userId);
+        List<Purchase> list = this.sessionFactory.getCurrentSession().createQuery("from Purchase where user_id=" + strId + " order by ID desc").list();
+        return list;
+    }
+
+    @SuppressWarnings("unchecked")
+    public long updatePurchase(Purchase purchase) {
+        String sql = "";
+        long newId = 0;
+        if (purchase.getID() == 0) {
+            this.sessionFactory.getCurrentSession().save(purchase);
+            newId = purchase.getID();
+        } else {
+            Query query = this.sessionFactory.getCurrentSession().createQuery(sql);
+            query.setParameter("user_id", purchase.getUserId());
+            query.setParameter("gross_total", purchase.getTotal());
+
+            query.executeUpdate();
+        }
+        return newId;
+
+    }
 
 
-	@SuppressWarnings("unchecked")
-	public void deletePurchase(long purchaseId) {
-		String sql = "";
-		sql += "delete from Purchase where ID=:purchase_id";
+    @SuppressWarnings("unchecked")
+    public void deletePurchase(long purchaseId) {
+        String sql = "";
+        sql += "delete from Purchase where ID=:purchase_id";
 
-		Query query = this.sessionFactory.getCurrentSession().createQuery(sql);
-		query.setParameter("purchase_id", purchaseId);
+        Query query = this.sessionFactory.getCurrentSession().createQuery(sql);
+        query.setParameter("purchase_id", purchaseId);
 
-		query.executeUpdate();
+        query.executeUpdate();
 
-	}
-	
+    }
+
+
 }

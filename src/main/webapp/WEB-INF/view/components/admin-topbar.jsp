@@ -5,6 +5,7 @@
 <a href="adminmembers">Browse Members</a> |
 <a href="adminsmembers">Search Members</a> |
 <a href="adminpurchases">Purchase Report</a> |
+<a href="adminspurchases">Search Purchase Report</a> |
 <a href="adminchangepassword">Change Password</a> |
 <a href="adminlogout">Logout</a>
 <br><br>
